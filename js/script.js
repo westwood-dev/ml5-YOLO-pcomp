@@ -1,9 +1,51 @@
-let video;
-let detector;
-let detections;
+// Variables //
+
+let video, detector, detections, serial, detectTimeout;
+let minConfidence = 0;
 let potData = 0;
-let serial;
 let modelLoaded = false;
+let lastPotValue = 0;
+
+// Detection Data Elements //
+
+const timelineSlider = document.querySelector('#timeline-slider');
+const timelineSliderValue = document.querySelector('#timeline-slider-value');
+
+const confidenceSlider = document.querySelector('#confidence-slider');
+const confidenceSliderValue = document.querySelector(
+  '#confidence-slider-value'
+);
+
+const showResults = document.querySelector('#show-results-input');
+
+const categoriesHolder = document.querySelector('#categories-holder');
+
+function unique(value, index, self) {
+  return self.indexOf(value) === index;
+}
+
+// ML5 Functions //
+
+function modelReady() {
+  console.log('model loaded');
+  modelLoaded = true;
+}
+
+function detect() {
+  if (!modelLoaded) {
+    return;
+  }
+  detector.detect(video, gotResults);
+}
+
+function gotResults(err, results) {
+  if (err) {
+    console.log(err, video);
+    return;
+  }
+
+  detections = results;
+}
 
 function preload() {
   detector = ml5.objectDetector('yolo', modelReady);
@@ -21,57 +63,11 @@ function setup() {
     console.log(parseInt(data));
   });
 
-  // video = createCapture(VIDEO);
   video = createVideo('../video/test_footage.mp4');
   video.size(width, height);
   video.hide();
   video.volume(0);
-  // video.play();
-
-  frameRate(30);
 }
-
-function modelReady() {
-  console.log('model loaded');
-  modelLoaded = true;
-  // detect();
-}
-
-function detect() {
-  if (!modelLoaded) {
-    return;
-  }
-  detector.detect(video, gotResults);
-  // if (video.elt.buffered.length > 0) {
-  //   detector.detect(video, gotResults);
-  // } else {
-  //   setTimeout(() => {
-  //     detect();
-  //   }, 100);
-  // }
-}
-
-function gotResults(err, results) {
-  if (err) {
-    console.log(err, video);
-    return;
-  }
-
-  detections = results;
-
-  // detect();
-}
-
-const timelineSlider = document.querySelector('#timeline-slider');
-const timelineSliderValue = document.querySelector('#timeline-slider-value');
-
-const confidenceSlider = document.querySelector('#confidence-slider');
-const confidenceSliderValue = document.querySelector(
-  '#confidence-slider-value'
-);
-
-let lastPotValue = 0;
-let detectTimeout;
 
 function draw() {
   image(video, 0, 0, width, height);
@@ -91,15 +87,18 @@ function draw() {
     timelineSliderValue.innerHTML = timelineValue.toFixed(2);
   }
 
-  if (potData === lastPotValue) {
+  if (potData === lastPotValue && serial.isOpen()) {
     detectTimeout = setTimeout(() => {
       console.log('detecting');
       detect();
     }, 300);
   }
 
-  if (detections) {
+  if (detections && showResults.checked) {
     detections.forEach((detection) => {
+      if (detection.confidence < minConfidence) {
+        return;
+      }
       noStroke();
       fill(255);
       strokeWeight(2);
@@ -123,6 +122,12 @@ function draw() {
         detection.normalized.height * height
       );
     });
+    let uniqueCategories = detections.map((detection) => detection.label);
+    categoriesHolder.innerHTML = '';
+    uniqueCategories.filter(unique).forEach((category) => {
+      categoriesHolder.innerHTML += '<li>' + category + '</li>';
+    });
+    // console.log(uniqueCategories.filter(unique));
   }
 }
 
@@ -134,6 +139,7 @@ timelineSlider.addEventListener('input', (e) => {
 
 confidenceSlider.addEventListener('input', (e) => {
   confidenceSliderValue.innerHTML = Number(e.target.value).toFixed(2);
+  minConfidence = Number(e.target.value).toFixed(2);
 });
 
 document.querySelector('#serialConnect').addEventListener('click', () => {
