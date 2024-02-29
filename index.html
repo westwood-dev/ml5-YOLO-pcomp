@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ml5 Object Detection Demo</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="libraries/p5.min.js"></script>
+    <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
+    <script src="libraries/p5.webserial.js"></script>
+  </head>
+  <body>
+    <div id="video-holder"></div>
+    <div id="controls-holder">
+      <div>
+        <label for="timeline-slider">Timeline Slider</label>
+        <input
+          type="range"
+          min="0"
+          max="1023"
+          value="0"
+          id="timeline-slider"
+        /><span class="slider-value" id="timeline-slider-value">0</span>
+      </div>
+      <div>
+        <label for="confidence-slider">Min-Confidence Slider</label>
+        <input
+          type="range"
+          min="0"
+          max="1"
+          value="0"
+          step="0.01"
+          id="confidence-slider"
+        /><span class="slider-value" id="confidence-slider-value">0.00</span>
+      </div>
+      <div>
+        <button id="serialConnect">Connect</button>
+      </div>
+    </div>
+    <!-- <script src="libraries/p5.webserial.js"></script> -->
+    <script src="js/script.js"></script>
+  </body>
+</html>
