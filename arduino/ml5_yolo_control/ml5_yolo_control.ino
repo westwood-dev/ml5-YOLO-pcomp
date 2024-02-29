@@ -1,5 +1,5 @@
-
-int lastPot = 0;
+// Simple sketch to read a potentiometer on pin A0,
+// and write it's value to Serial
 
 void setup()
 {
@@ -8,16 +8,12 @@ void setup()
 }
 void loop()
 {
-  
   // read the input pin:
-  int pot = analogRead(A0);                  
-  // remap the pot value to fit in 1 byte:
-  // int mappedPot = map(potentiometer, 0, 1023, 0, 255); 
-  if (pot != lastPot) {
+  int pot = analogRead(A0);
+
   // print it out the serial port:
   Serial.println(pot);
-  }
-  lastPot = pot;
+  
   // Delay to stabilise
   delay(10);
 }
