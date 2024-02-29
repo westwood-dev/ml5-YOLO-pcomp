@@ -1,10 +1,12 @@
 let video;
 let detector;
 let detections;
-let port;
+let potData = 0;
+let serial;
+let modelLoaded = false;
 
 function preload() {
-  // detector = ml5.objectDetector('yolo', modelReady);
+  detector = ml5.objectDetector('yolo', modelReady);
 }
 
 function setup() {
@@ -12,7 +14,12 @@ function setup() {
   canvas.parent('video-holder');
 
   //create a Serial connection
-  port = createSerial();
+  serial = new Serial();
+
+  serial.on(SerialEvents.DATA_RECEIVED, (_, data) => {
+    potData = parseInt(data);
+    console.log(parseInt(data));
+  });
 
   // video = createCapture(VIDEO);
   video = createVideo('../video/test_footage.mp4');
@@ -26,17 +33,22 @@ function setup() {
 
 function modelReady() {
   console.log('model loaded');
+  modelLoaded = true;
   // detect();
 }
 
 function detect() {
-  if (video.elt.buffered.length > 0) {
-    detector.detect(video, gotResults);
-  } else {
-    setTimeout(() => {
-      detect();
-    }, 100);
+  if (!modelLoaded) {
+    return;
   }
+  detector.detect(video, gotResults);
+  // if (video.elt.buffered.length > 0) {
+  //   detector.detect(video, gotResults);
+  // } else {
+  //   setTimeout(() => {
+  //     detect();
+  //   }, 100);
+  // }
 }
 
 function gotResults(err, results) {
@@ -47,7 +59,7 @@ function gotResults(err, results) {
 
   detections = results;
 
-  detect();
+  // detect();
 }
 
 const timelineSlider = document.querySelector('#timeline-slider');
@@ -59,17 +71,31 @@ const confidenceSliderValue = document.querySelector(
 );
 
 let lastPotValue = 0;
+let detectTimeout;
 
 function draw() {
   image(video, 0, 0, width, height);
 
   let timelineValue = (video.elt.currentTime / video.elt.duration) * 1023;
 
-  if (port.opened()) {
-    console.log(port.readUntil('\n'));
+  if (serial.isOpen()) {
+    if (abs(potData - lastPotValue) > 2) {
+      lastPotValue = potData;
+      timelineSlider.value = potData;
+      timelineSliderValue.innerHTML = potData.toFixed(2);
+      video.elt.currentTime = (potData / 1023) * video.elt.duration;
+      clearTimeout(detectTimeout);
+    }
   } else {
     timelineSlider.value = timelineValue;
     timelineSliderValue.innerHTML = timelineValue.toFixed(2);
+  }
+
+  if (potData === lastPotValue) {
+    detectTimeout = setTimeout(() => {
+      console.log('detecting');
+      detect();
+    }, 300);
   }
 
   if (detections) {
@@ -111,11 +137,11 @@ confidenceSlider.addEventListener('input', (e) => {
 });
 
 document.querySelector('#serialConnect').addEventListener('click', () => {
-  if (!port.opened()) {
-    port.open('Arduino', 9600);
+  if (!serial.isOpen()) {
+    serial.connectAndOpen(null);
     document.querySelector('#serialConnect').innerHTML = 'Disconnect';
   } else {
-    port.close();
+    serial.close();
     document.querySelector('#serialConnect').innerHTML = 'Connect';
   }
 });
