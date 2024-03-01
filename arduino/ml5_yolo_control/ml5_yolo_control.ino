@@ -8,11 +8,13 @@ void setup()
 }
 void loop()
 {
-  // read the input pin:
-  int pot = analogRead(A0);
+  // read the input pins:
+  int timelinePot = analogRead(A0);
+  int confidencePot = analogRead(A1);
 
-  // print it out the serial port:
-  Serial.println(pot);
+  // Print it out the serial port, with the structure: "timelinePot/confidencePot"
+  // This allows us to send two values with one serial print
+  Serial.println(String(timelinePot)+"/"+String(confidencePot));
   
   // Delay to stabilise
   delay(10);

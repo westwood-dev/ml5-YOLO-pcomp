@@ -7,9 +7,9 @@
 
 let video, detector, detections, serial, detectTimeout;
 let minConfidence = 0;
-let potData = 0;
+let timeline = 0;
 let modelLoaded = false;
-let lastPotValue = 0;
+let lastTimelineValue = 0;
 
 // Detection Data Elements //
 
@@ -39,7 +39,12 @@ function modelReady() {
 
 // Function to detect objects in the video
 function detect() {
+  // Make sure the model is loaded
   if (!modelLoaded) {
+    return;
+  }
+  // Make sure the video is ready
+  if (video.elt.readyState !== 4) {
     return;
   }
   detector.detect(video, gotResults);
@@ -83,25 +88,21 @@ function draw() {
   // Draw the video frame to the canvas
   image(video, 0, 0, width, height);
 
-  // Set the timeline slider value to the current video time
-  let timelineValue = (video.elt.currentTime / video.elt.duration) * 1023;
-
-  // If the serial port is open, update the potData value
-  if (serial.isOpen()) {
-    if (abs(potData - lastPotValue) > 2) {
-      lastPotValue = potData;
-      timelineSlider.value = potData;
-      timelineSliderValue.innerHTML = potData.toFixed(2);
-      video.elt.currentTime = (potData / 1023) * video.elt.duration;
-      clearTimeout(detectTimeout);
-    }
-  } else {
-    timelineSlider.value = timelineValue;
-    timelineSliderValue.innerHTML = timelineValue.toFixed(2);
+  // Update the timeline value
+  if (abs(timeline - lastTimelineValue) > 2) {
+    lastTimelineValue = timeline;
+    timelineSlider.value = timeline;
+    timelineSliderValue.innerHTML = timeline.toFixed(2);
+    video.elt.currentTime = (timeline / 1023) * video.elt.duration;
+    clearTimeout(detectTimeout);
   }
 
+  // Update the confidence slider value
+  confidenceSlider.value = Number(minConfidence);
+  confidenceSliderValue.innerHTML = Number(minConfidence).toFixed(2);
+
   // If the video is playing and the model is loaded, detect objects
-  if (potData === lastPotValue && serial.isOpen()) {
+  if (timeline === lastTimelineValue) {
     detectTimeout = setTimeout(() => {
       // console.log('detecting');
       detect();
@@ -133,6 +134,7 @@ function draw() {
         stroke(0, 0, 255);
       }
       // Draw the bounding box
+      // We use the normalised values to draw the bounding box as the video is scaled to fit the canvas
       rect(
         detection.normalized.x * width,
         detection.normalized.y * height,
@@ -155,28 +157,26 @@ function draw() {
 
 // Function to run when data is received on the serial port
 function serialDataReceived(_, data) {
-  potData = parseInt(data);
-  // console.log(parseInt(data));
+  // Data from Arduino is formatted: "timelinePotValue/confidencePotValue"
+  // Using String.split('/') to get the two values
+  timeline = parseInt(data.split('/')[0]);
+  minConfidence = (parseFloat(data.split('/')[1]) / 1023).toFixed(2);
 }
 
-// Control Events
+// Control Events //
 
 // Timeline Slider Event for when the slider is manually changed
 timelineSlider.addEventListener('input', (e) => {
-  video.elt.currentTime = (e.target.value / 1023) * video.elt.duration;
-  // If the serial port is not open, update the potData value manually
-  if (!serial.isOpen()) {
-    potData = e.target.value;
-  }
+  timeline = Number(e.target.value);
 });
 
 // Confidence Slider Event for when the slider is manually changed
 confidenceSlider.addEventListener('input', (e) => {
-  confidenceSliderValue.innerHTML = Number(e.target.value).toFixed(2);
   minConfidence = Number(e.target.value).toFixed(2);
 });
 
-// Serial Connection Event
+// Serial Connection Event //
+
 // This event listener handles the click event on the serialConnect button.
 document.querySelector('#serialConnect').addEventListener('click', () => {
   if (!serial.isOpen()) {
