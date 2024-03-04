@@ -63,7 +63,7 @@ function gotResults(err, results) {
 // p5.js Functions //
 
 function preload() {
-  detector = ml5.objectDetector('yolo', modelReady);
+  detector = ml5.objectDetector('cocossd', modelReady);
 }
 
 function setup() {
@@ -124,8 +124,8 @@ function draw() {
       // Draw the label
       text(
         detection.label + ' / ' + detection.confidence.toFixed(2),
-        detection.normalized.x * width + 4,
-        detection.normalized.y * height + 10
+        detection.x * (width/1920) + 4,
+        detection.y * (height/1080) + 10
       );
 
       noFill();
@@ -136,13 +136,13 @@ function draw() {
         stroke(0, 0, 255);
       }
       // Draw the bounding box
-      // We use the normalised values to draw the bounding box as the video is scaled to fit the canvas
-      rect(
-        detection.normalized.x * width,
-        detection.normalized.y * height,
-        detection.normalized.width * width,
-        detection.normalized.height * height
-      );
+      // We use the returned values to draw the bounding box and scale them to fit the defined canvas
+        rect(
+          (detection.x) * (width/1920),
+          (detection.y) * (height/1080),
+          (detection.width) * (width/1920),
+          (detection.height) * (height/1080)
+          );
     });
     // Filter unique categories and display them in the categoriesHolder
     let uniqueCategories = [
