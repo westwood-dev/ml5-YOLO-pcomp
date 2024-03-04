@@ -78,7 +78,7 @@ function setup() {
   serial.on(SerialEvents.DATA_RECEIVED, serialDataReceived);
 
   // Load the video as an html DOM element and hide it from view
-  video = createVideo('../video/test_footage.mp4');
+  video = createVideo('../video/test_footage_2.mp4');
   video.volume(0);
   // Set the video time to be higher than 0 to load the first frame
   video.elt.currentTime = 1;
