@@ -67,7 +67,7 @@ function preload() {
 }
 
 function setup() {
-  let canvas = createCanvas(1280, 720);
+  let canvas = createCanvas(1024, 576);
   // Move the canvas so it’s inside the <div id="video-holder">.
   canvas.parent('video-holder');
 
