@@ -78,12 +78,15 @@ function setup() {
   serial.on(SerialEvents.DATA_RECEIVED, serialDataReceived);
 
   // Load the video as an html DOM element and hide it from view
-  video = createVideo('../video/test_footage_2.mp4');
-  video.size(width, height);
-  video.hide();
+  video = createVideo('../video/test_footage.mp4');
   video.volume(0);
   // Set the video time to be higher than 0 to load the first frame
   video.elt.currentTime = 1;
+  video.elt.addEventListener('loadeddata', (e) => {
+    resizeCanvas(Number(video.elt.getAttribute('width')), Number(video.elt.getAttribute('height')))
+
+  })
+  video.hide();
 }
 
 function draw() {
@@ -124,8 +127,8 @@ function draw() {
       // Draw the label
       text(
         detection.label + ' / ' + detection.confidence.toFixed(2),
-        detection.x * (width/1920) + 4,
-        detection.y * (height/1080) + 10
+        detection.x + 4,
+        detection.y + 10
       );
 
       noFill();
@@ -138,10 +141,10 @@ function draw() {
       // Draw the bounding box
       // We use the returned values to draw the bounding box and scale them to fit the defined canvas
         rect(
-          (detection.x) * (width/1920),
-          (detection.y) * (height/1080),
-          (detection.width) * (width/1920),
-          (detection.height) * (height/1080)
+          detection.x,
+          detection.y,
+          detection.width,
+          detection.height
           );
     });
     // Filter unique categories and display them in the categoriesHolder
@@ -191,3 +194,4 @@ document.querySelector('#serialConnect').addEventListener('click', () => {
     document.querySelector('#serialConnect').innerHTML = 'Connect';
   }
 });
+
