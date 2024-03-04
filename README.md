@@ -1,4 +1,4 @@
-# Project Name
+# Object detection with PCOMP controls
 
 A project using p5.js, ml5.js, and Arduino over serial for object detection.
 
