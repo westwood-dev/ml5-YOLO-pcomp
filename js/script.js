@@ -82,6 +82,8 @@ function setup() {
   video.size(width, height);
   video.hide();
   video.volume(0);
+  // Set the video time to be higher than 0 to load the first frame
+  video.elt.currentTime = 1;
 }
 
 function draw() {
