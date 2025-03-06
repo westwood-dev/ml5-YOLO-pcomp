@@ -24,11 +24,12 @@ This project combines the power of p5.js, ml5.js, and Arduino to perform object 
 
 ## Usage
 
-1. Wire two potentiometers to your Arduino, following the wiring guide here (`circuit-image.png`)
-2. Connect your Arduino board to your computer via USB.
-3. Open the Arduino IDE and upload the provided Arduino sketch (`arduino_sketch.ino`) to your Arduino board.
-4. Run the p5.js sketch by opening `index.html` in a web browser.
-5. Follow the on-screen instructions to interact with the object detection system.
+  ![circuit diagram image](arduino/circuit-image.png)
+1. Wire two potentiometers to your Arduino, following the wiring guide above.
+3. Connect your Arduino board to your computer via USB.
+4. Open the Arduino IDE and upload the provided Arduino sketch [here](arduino/ml5_yolo_control/ml5_yolo_control.ino) to your Arduino board.
+5. Run the p5.js sketch by opening `index.html` in a web browser or using VSCode [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer).
+6. Follow the on-screen instructions to interact with the object detection system.
 
 ## Contributing
 
